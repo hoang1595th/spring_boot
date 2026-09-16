@@ -1,9 +1,11 @@
-package hoang.learn.spring_boot;
+package hoang.learn.spring_boot.modules.user.controller;
 
-import hoang.learn.spring_boot.dto.UserRequest;
+import hoang.learn.spring_boot.modules.user.dto.UserProfileForm;
+import hoang.learn.spring_boot.modules.user.dto.UserRequest;
 import jakarta.validation.Valid;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.web.multipart.MultipartFile;
 
 @RestController
 public class UserController {
@@ -14,16 +16,7 @@ public class UserController {
         return "Lấy thông tin người dùng có ID = " + userId;
     }
 
-    // Kết hợp nhiều PathVariable
-    // URL ví dụ: http://localhost:8080/categories/books/products/45
-    @GetMapping("/categories/{category}/products/{productId}")
-    public String getProductDetail(
-            @PathVariable String category,
-            @PathVariable Long productId) {
-        return "Sản phẩm ID " + productId + " thuộc danh mục " + category;
-    }
-
-    @PostMapping
+    @PostMapping("/users/create")
     public ResponseEntity<String> createUser(@Valid @RequestBody UserRequest userRequest) {
         // Spring Boot tự động chuyển dữ liệu JSON thành đối tượng userRequest
         String responseMessage = String.format("Đã tạo người dùng thành công: %s (%s), %d tuổi",
@@ -32,5 +25,12 @@ public class UserController {
                 userRequest.getAge());
 
         return ResponseEntity.ok(responseMessage);
+    }
+
+    @PostMapping("/users/profile")
+    public ResponseEntity<String> updateProfile(@ModelAttribute UserProfileForm form) {
+        // Spring tự động đọc name, email từ form-data và gán vào form object
+        MultipartFile avatar = form.getAvatar();
+        return ResponseEntity.ok("Cập nhật thành công cho: " + form.getName());
     }
 }

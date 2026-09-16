@@ -1,4 +1,4 @@
-package hoang.learn.spring_boot.dto;
+package hoang.learn.spring_boot.modules.user.dto;
 
 import jakarta.validation.constraints.Email;
 import jakarta.validation.constraints.Min;
