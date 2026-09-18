@@ -1,0 +1,23 @@
+version: '3.8'
+
+services:
+  spring-app:
+    build: .
+    ports:
+      - "8080:8080"
+    environment:
+      SPRING_DATASOURCE_URL: jdbc:postgresql://postgres-db:5432/sb_learning
+      SPRING_DATASOURCE_USERNAME: postgres_root
+      SPRING_DATASOURCE_PASSWORD: 2eb862e7d16f4da7
+    depends_on:
+      - postgres-db
+
+  postgres-db:
+    image: postgres:latest
+    container_name: postgres-db
+    ports:
+      - "5432:5432"
+    environment:
+      POSTGRES_DB: sb_learning
+      POSTGRES_USER: postgres_root
+      POSTGRES_PASSWORD: 2eb862e7d16f4da7

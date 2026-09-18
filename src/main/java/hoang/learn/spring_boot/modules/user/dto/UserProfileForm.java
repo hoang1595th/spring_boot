@@ -1,7 +1,11 @@
 package hoang.learn.spring_boot.modules.user.dto;
 
+import lombok.Getter;
+import lombok.Setter;
 import org.springframework.web.multipart.MultipartFile;
 
+@Setter
+@Getter
 public class UserProfileForm {
     private String name;
     private String email;
@@ -10,10 +14,4 @@ public class UserProfileForm {
     // Bắt buộc phải có Default Constructor và các Getter/Setter
     public UserProfileForm() {}
 
-    public String getName() { return name; }
-    public void setName(String name) { this.name = name; }
-    public String getEmail() { return email; }
-    public void setEmail(String email) { this.email = email; }
-    public MultipartFile getAvatar() { return avatar; }
-    public void setAvatar(MultipartFile avatar) { this.avatar = avatar; }
 }

@@ -11,4 +11,7 @@ public interface UserRepository extends JpaRepository<User, Long> {
 
     // Spring Data JPA tự động tạo câu truy vấn: SELECT * FROM users WHERE email = ?
     Optional<User> findByEmail(String email);
+
+    Optional<User> findByUsername(String username);
+
 }
