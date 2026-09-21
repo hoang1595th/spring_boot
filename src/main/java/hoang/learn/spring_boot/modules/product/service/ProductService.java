@@ -1,41 +1,24 @@
 package hoang.learn.spring_boot.modules.product.service;
 
-import hoang.learn.spring_boot.common.exception.ResourceNotFoundException;
-import hoang.learn.spring_boot.modules.product.entity.Product;
-import hoang.learn.spring_boot.modules.product.repository.ProductRepository;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.stereotype.Service;
-import org.springframework.transaction.annotation.Transactional;
-import java.util.List;
+import hoang.learn.spring_boot.modules.product.dto.ProductCreateRequest;
+import hoang.learn.spring_boot.modules.product.dto.ProductResponse;
+import hoang.learn.spring_boot.modules.product.dto.ProductUpdateRequest;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
+import org.springframework.web.multipart.MultipartFile;
 
-@Service
-public class ProductService {
-    @Autowired private ProductRepository productRepository;
+public interface ProductService {
+    ProductResponse createProduct(ProductCreateRequest request);
 
-    @Transactional
-    public Product createProduct(Product product) { return productRepository.save(product); }
+    // Hỗ trợ tạo sản phẩm kèm upload ảnh (MultipartFile)
+    ProductResponse createProductWithImage(ProductCreateRequest request, MultipartFile imageFile);
 
-    public List<Product> getAllProducts() { return productRepository.findAll(); }
+    ProductResponse getProductById(Long id);
 
-    public Product getProductById(Long id) {
-        return productRepository.findById(id)
-                .orElseThrow(() -> new ResourceNotFoundException("Product", "id", id));
-    }
+    Page<ProductResponse> getAllProducts(String searchKeyword, Pageable pageable);
 
-    @Transactional
-    public Product updateProduct(Long id, Product productDetails) {
-        Product existingProduct = getProductById(id); // Sẽ ném lỗi nếu không tìm thấy
-        existingProduct.setName(productDetails.getName());
-        existingProduct.setPrice(productDetails.getPrice());
-        existingProduct.setStockQuantity(productDetails.getStockQuantity());
-        return productRepository.save(existingProduct);
-    }
+    ProductResponse updateProduct(Long id, ProductUpdateRequest request);
 
-    @Transactional
-    public void deleteProduct(Long id) {
-        if (!productRepository.existsById(id)) {
-            throw new ResourceNotFoundException("Product", "id", id);
-        }
-        productRepository.deleteById(id);
-    }
+    void deleteProduct(Long id);
+
 }

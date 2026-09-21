@@ -1,71 +1,73 @@
 package hoang.learn.spring_boot.modules.product.controller;
 
-import hoang.learn.spring_boot.modules.product.dto.ProductCreateDto;
+import hoang.learn.spring_boot.modules.product.dto.ProductCreateRequest;
+import hoang.learn.spring_boot.modules.product.dto.ProductResponse;
+import hoang.learn.spring_boot.modules.product.dto.ProductUpdateRequest;
+import hoang.learn.spring_boot.modules.product.service.ProductService;
 import jakarta.validation.Valid;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Sort;
+import org.springframework.data.web.PageableDefault;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 
 @RestController
+@RequestMapping("/api/products")
 public class ProductController {
 
-    // URL ví dụ: http://localhost:8080/products?name=iphone
-    @GetMapping("/products")
-    public String searchProduct(@RequestParam("name") String keyword) {
-        return "Kết quả tìm kiếm cho từ khóa: " + keyword;
+    private final ProductService productService;
+
+    public ProductController(ProductService productService) {
+        this.productService = productService;
     }
 
-    // Xử lý tham số không bắt buộc (Optional) và cài đặt giá trị mặc định (defaultValue)
-    // URL có thể gọi: http://localhost:8080/items?page=2&limit=20
-    // Hoặc gọi không truyền tham số: http://localhost:8080/items
-    @GetMapping("/items")
-    public String getItems(
-            @RequestParam(name = "page", required = false, defaultValue = "1") int page,
-            @RequestParam(name = "limit", required = false, defaultValue = "10") int limit) {
-        return "Hiển thị trang: " + page + " với số lượng item: " + limit;
+    // 1. API Tạo mới sản phẩm (JSON thuần)
+    @PostMapping
+    public ResponseEntity<ProductResponse> createProduct(@Valid @RequestBody ProductCreateRequest request) {
+        ProductResponse response = productService.createProduct(request);
+        return ResponseEntity.status(HttpStatus.CREATED).body(response);
     }
 
-    // URL ví dụ: http://localhost:8080/departments/it/employees?status=active&page=1
-    @GetMapping("/departments/{deptCode}/employees")
-    public String getEmployeesByDept(
-            @PathVariable String deptCode,
-            @RequestParam(defaultValue = "active") String status,
-            @RequestParam(defaultValue = "1") int page) {
-
-        return "Lấy danh sách nhân viên phòng " + deptCode
-                + " có trạng thái " + status
-                + " ở trang " + page;
+    // 2. API Tạo mới sản phẩm kèm Upload Ảnh (Multipart Form Data - @RequestPart)
+    @PostMapping(value = "/with-image", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
+    public ResponseEntity<ProductResponse> createProductWithImage(
+            @Valid @RequestPart("data") ProductCreateRequest request,
+            @RequestPart(value = "file", required = false) MultipartFile imageFile) {
+        ProductResponse response = productService.createProductWithImage(request, imageFile);
+        return ResponseEntity.status(HttpStatus.CREATED).body(response);
     }
 
-    // Kết hợp nhiều PathVariable
-    // URL ví dụ: http://localhost:8080/categories/books/products/45
-    @GetMapping("/categories/{category}/products/{productId}")
-    public String getProductDetail(
-            @PathVariable String category,
-            @PathVariable Long productId) {
-        return "Sản phẩm ID " + productId + " thuộc danh mục " + category;
+    // 3. API Lấy chi tiết sản phẩm theo ID
+    @GetMapping("/{id}")
+    public ResponseEntity<ProductResponse> getProductById(@PathVariable Long id) {
+        return ResponseEntity.ok(productService.getProductById(id));
     }
 
-    @PostMapping(value = "/product/create", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
-    public ResponseEntity<String> createProduct(
-            // Part 1: Nhận chuỗi JSON và tự động giải mã thành Object + Validate
-            @Valid @RequestPart("data") ProductCreateDto productDto,
+    // 4. API Lấy danh sách sản phẩm (Hỗ trợ Search, Pagination & Sorting)
+    // Ví dụ URL: GET /api/products?keyword=laptop&page=0&size=10&sort=price,desc
+    @GetMapping
+    public ResponseEntity<Page<ProductResponse>> getAllProducts(
+            @RequestParam(required = false) String keyword,
+            @PageableDefault(page = 0, size = 10, sort = "createdAt", direction = Sort.Direction.DESC) Pageable pageable) {
+        return ResponseEntity.ok(productService.getAllProducts(keyword, pageable));
+    }
 
-            // Part 2: Nhận file upload
-            @RequestPart("file") MultipartFile imageFile) {
+    // 5. API Cập nhật sản phẩm
+    @PutMapping("/{id}")
+    public ResponseEntity<ProductResponse> updateProduct(
+            @PathVariable Long id,
+            @Valid @RequestBody ProductUpdateRequest request) {
+        return ResponseEntity.ok(productService.updateProduct(id, request));
+    }
 
-        // Kiểm tra file có rỗng không
-        if (imageFile.isEmpty()) {
-            return ResponseEntity.badRequest().body("Vui lòng chọn một file ảnh!");
-        }
-
-        String result = String.format("Đã tạo sản phẩm '%s' thành công với giá %.2f. File tải lên: %s (%d bytes)",
-                productDto.getName(),
-                productDto.getPrice(),
-                imageFile.getOriginalFilename(),
-                imageFile.getSize());
-
-        return ResponseEntity.ok(result);
+    // 6. API Xóa sản phẩm
+    @DeleteMapping("/{id}")
+    public ResponseEntity<Void> deleteProduct(@PathVariable Long id) {
+        productService.deleteProduct(id);
+        return ResponseEntity.noContent().build();
     }
 }
