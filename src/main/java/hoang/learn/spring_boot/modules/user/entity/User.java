@@ -31,7 +31,7 @@ public class User implements UserDetails {
 
     @Enumerated(EnumType.STRING)
     @Column(nullable = false)
-    private Role role; // Ví dụ: ROLE_ADMIN hoặc ROLE_USER
+    private Role role; // Ví dụ: ROLE_ADMIN hoặc ROLE_STAFF
 
     public User() {}
 

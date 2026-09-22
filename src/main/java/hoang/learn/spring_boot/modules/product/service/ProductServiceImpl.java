@@ -8,6 +8,8 @@ import hoang.learn.spring_boot.modules.product.entity.Product;
 import hoang.learn.spring_boot.modules.product.mapper.ProductMapper;
 import hoang.learn.spring_boot.modules.product.repository.CategoryRepository;
 import hoang.learn.spring_boot.modules.product.repository.ProductRepository;
+import org.springframework.cache.annotation.CacheEvict;
+import org.springframework.cache.annotation.Cacheable;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
@@ -31,6 +33,8 @@ public class ProductServiceImpl implements ProductService {
 
     @Override
     @Transactional
+    // Khi thêm mới sản phẩm, nếu bạn có cache danh sách sản phẩm thì xóa cache danh sách
+    @CacheEvict(value = "products", allEntries = true)
     public ProductResponse createProduct(ProductCreateRequest request) {
         if (productRepository.existsBySku(request.getSku())) {
             throw new IllegalArgumentException("Mã SKU '" + request.getSku() + "' đã tồn tại!");
@@ -58,6 +62,10 @@ public class ProductServiceImpl implements ProductService {
 
     @Override
     @Transactional(readOnly = true)
+    // 1. @Cacheable: Kiểm tra trong Redis cache "product_detail" với key là id.
+    // Nếu có -> Trả về ngay lập tức (Hit cache), không chạy vào hàm này.
+    // Nếu chưa có -> Chạy truy vấn DB, lấy dữ liệu lưu vào Redis (Miss cache) rồi trả về.
+    @Cacheable(value = "product_detail", key = "#id", unless = "#result == null")
     public ProductResponse getProductById(Long id) {
         Product product = productRepository.findByIdWithCategory(id)
                 .orElseThrow(() -> new RuntimeException("Không tìm thấy sản phẩm với ID: " + id));
@@ -78,6 +86,10 @@ public class ProductServiceImpl implements ProductService {
 
     @Override
     @Transactional
+    // 1. @Cacheable: Kiểm tra trong Redis cache "product_detail" với key là id.
+    // Nếu có -> Trả về ngay lập tức (Hit cache), không chạy vào hàm này.
+    // Nếu chưa có -> Chạy truy vấn DB, lấy dữ liệu lưu vào Redis (Miss cache) rồi trả về.
+    @Cacheable(value = "product_detail", key = "#id", unless = "#result == null")
     public ProductResponse updateProduct(Long id, ProductUpdateRequest request) {
         Product product = productRepository.findById(id)
                 .orElseThrow(() -> new RuntimeException("Không tìm thấy sản phẩm với ID: " + id));
@@ -93,6 +105,8 @@ public class ProductServiceImpl implements ProductService {
 
     @Override
     @Transactional
+    // 3. @CacheEvict khi Xóa: Xóa cache chi tiết sản phẩm này và cả cache danh sách sản phẩm
+    @CacheEvict(value = "product_detail", key = "#id")
     public void deleteProduct(Long id) {
         if (!productRepository.existsById(id)) {
             throw new RuntimeException("Không tìm thấy sản phẩm với ID: " + id);

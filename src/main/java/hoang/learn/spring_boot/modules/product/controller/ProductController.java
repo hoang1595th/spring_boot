@@ -12,11 +12,12 @@ import org.springframework.data.web.PageableDefault;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 
 @RestController
-@RequestMapping("/api/products")
+@RequestMapping("/api/v1/products")
 public class ProductController {
 
     private final ProductService productService;
@@ -27,6 +28,7 @@ public class ProductController {
 
     // 1. API Tạo mới sản phẩm (JSON thuần)
     @PostMapping
+    @PreAuthorize("hasRole('ADMIN')")
     public ResponseEntity<ProductResponse> createProduct(@Valid @RequestBody ProductCreateRequest request) {
         ProductResponse response = productService.createProduct(request);
         return ResponseEntity.status(HttpStatus.CREATED).body(response);
@@ -34,6 +36,7 @@ public class ProductController {
 
     // 2. API Tạo mới sản phẩm kèm Upload Ảnh (Multipart Form Data - @RequestPart)
     @PostMapping(value = "/with-image", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
+    @PreAuthorize("hasRole('ADMIN')")
     public ResponseEntity<ProductResponse> createProductWithImage(
             @Valid @RequestPart("data") ProductCreateRequest request,
             @RequestPart(value = "file", required = false) MultipartFile imageFile) {
@@ -58,6 +61,7 @@ public class ProductController {
 
     // 5. API Cập nhật sản phẩm
     @PutMapping("/{id}")
+    @PreAuthorize("hasRole('ADMIN')")
     public ResponseEntity<ProductResponse> updateProduct(
             @PathVariable Long id,
             @Valid @RequestBody ProductUpdateRequest request) {
@@ -66,6 +70,7 @@ public class ProductController {
 
     // 6. API Xóa sản phẩm
     @DeleteMapping("/{id}")
+    @PreAuthorize("hasRole('ADMIN')")
     public ResponseEntity<Void> deleteProduct(@PathVariable Long id) {
         productService.deleteProduct(id);
         return ResponseEntity.noContent().build();

@@ -43,12 +43,14 @@ public class SecurityConfig {
                                 "/api-docs",
                                 "/api-docs/**"
                         ).permitAll()
+                        // Tất cả mọi người (kể cả Guest/Customer) đều có thể XEM và TÌM KIẾM sản phẩm
+                        .requestMatchers(HttpMethod.GET, "/api/v1/products/**").permitAll()
 
                         // Chỉ ADMIN mới có quyền truy cập các đường dẫn /api/v1/admin/**
                         .requestMatchers("/api/v1/admin/**").hasRole("ADMIN") // Tự động kiểm tra authority "ROLE_ADMIN"
 
                         // Chỉ ADMIN hoặc MANAGER mới có quyền XÓA tài khoản
-                        .requestMatchers(HttpMethod.DELETE, "/api/v1/users/**").hasAnyRole("ADMIN", "MANAGER")
+                        .requestMatchers(HttpMethod.DELETE, "/api/v1/users/**").hasAnyRole("ADMIN", "STAFF")
 
                         // Tất cả API còn lại yêu cầu đăng nhập (bất kỳ role nào)
                         .anyRequest().authenticated()

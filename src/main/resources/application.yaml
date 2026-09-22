@@ -1,4 +1,14 @@
 spring:
+  data:
+    redis:
+      host: ${REDIS_HOST:localhost}
+      port: ${REDIS_PORT:6379}
+      timeout: 2000ms
+    cache:
+      type: redis
+      redis:
+        time-to-live: 3600000 # Thời gian sống mặc định của Cache (1 giờ = 3,600,000 ms)
+        cache-null-values: false # Không lưu các giá trị null vào Cache
   datasource:
     url: jdbc:postgresql://localhost:5432/sb_learning
 #    url: jdbc:postgresql://host.docker.internal:5432/sb_learning

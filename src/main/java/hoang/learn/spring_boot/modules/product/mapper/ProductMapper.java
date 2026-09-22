@@ -18,6 +18,8 @@ public interface ProductMapper {
 
     // 1. Chuyển từ Request sang Entity
     @Mapping(target = "id", ignore = true)
+    @Mapping(target = "name", source = "request.name")
+    @Mapping(target = "description", source = "request.description")
     @Mapping(target = "category", source = "category")
     @Mapping(target = "status", ignore = true) // Mặc định trong Entity đã tự set ACTIVE
     @Mapping(target = "createdAt", ignore = true)
@@ -32,6 +34,8 @@ public interface ProductMapper {
     // 3. Cập nhật dữ liệu từ DTO vào Entity hiện có (@MappingTarget)
     @Mapping(target = "id", ignore = true)
     @Mapping(target = "sku", ignore = true) // Không cho cập nhật SKU
+    @Mapping(target = "name", source = "request.name")
+    @Mapping(target = "description", source = "request.description")
     @Mapping(target = "category", source = "category")
     @Mapping(target = "createdAt", ignore = true)
     @Mapping(target = "updatedAt", ignore = true)
